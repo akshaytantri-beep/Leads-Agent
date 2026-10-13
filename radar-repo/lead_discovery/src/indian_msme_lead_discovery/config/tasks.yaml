@@ -1,0 +1,62 @@
+---
+discover_indian_companies_with_buying_signals:
+  description: 'Search across Indian medium and small enterprises in Healthcare, Manufacturing,
+    Education, and Tech industries to identify companies showing buying signals. Focus
+    on Indian companies specifically including startups, MSMEs, and growing companies.
+    Look for indicators such as: recent funding announcements, technology upgrades,
+    new hires in relevant roles, expansion plans, digital transformation initiatives,
+    compliance requirements, or pain points being discussed online.'
+  expected_output: 'A list of 15-20 Indian medium and small enterprise companies showing
+    strong buying signals, including: company name, industry, website URL, specific
+    buying signals identified, recent news or developments, company size (medium/small),
+    and location in India.'
+  agent: b2b_prospect_discovery_specialist
+research_indian_decision_makers_and_company_intelligence:
+  description: 'For each Indian company identified in the buying signals research,
+    conduct deep research to identify decision-makers with budget authority (CEOs,
+    CTOs, CMOs, Founders, Co-Founders, VPs, Directors). Focus on Indian executives
+    and their contact information. Gather detailed company intelligence including:
+    organizational structure, key personnel, current challenges, recent announcements,
+    and company growth indicators. Estimate the employee count as a number, for
+    example 120, from sources such as the company website or news. Record an email
+    address only if it appears on a public page, and note that page''s URL. Never
+    guess or construct an email address.'
+  expected_output: 'Detailed prospect profiles for each Indian company including:
+    primary decision-maker information (name, title, estimated employee count, and
+    a public email with its source URL if one was found),
+    company details (industry, location in India), and key insights about the company''s
+    current status and growth stage.'
+  agent: b2b_prospect_discovery_specialist
+  context:
+  - discover_indian_companies_with_buying_signals
+generate_indian_leads_csv_report:
+  description: 'Compile all discovered Indian prospect information into a structured
+    CSV format with the specific columns requested: Name, Company, Industry, Job_Title,
+    Company_Size, Email, Email_Source. Focus on Indian medium and small enterprises
+    only. Company_Size must be the estimated number of employees, for example 120.
+    Leave Email and Email_Source blank when no public email was found. Include only
+    decision makers actually identified in the previous research; never invent a
+    person or an email to fill rows.'
+  expected_output: 'A properly formatted CSV file content with the exact columns:
+    Name,Company,Industry,Job_Title,Company_Size,Email,Email_Source. One to two decision
+    makers for each company found, so roughly 15 to 40 rows, every one traceable to
+    the research.'
+  agent: b2b_prospect_discovery_specialist
+  context:
+  - research_indian_decision_makers_and_company_intelligence
+save_indian_leads_to_onedrive_as_leads_csv:
+  description: 'Take the formatted CSV content from the previous task and upload it
+    to OneDrive twice. First, save a dated copy named ''leads_'' plus today''s date as YYYY-MM-DD and ''.csv'' in the
+    ''/leads/archive/'' folder so every day''s leads are kept. Second, save it as
+    ''leads.csv'' in the ''/leads/'' folder, replacing any existing file; this upload
+    triggers the RADAR lead scoring crew. The file should contain exactly the columns:
+    Name,Company,Industry,Job_Title,Company_Size,Email,Email_Source with all the Indian
+    medium and small enterprise prospect data.'
+  expected_output: Confirmation that both files were uploaded to OneDrive, the dated
+    copy in /leads/archive/ and leads.csv in the /leads/ folder, replacing any previous
+    leads.csv. Include the file
+    ID, full OneDrive path (leads/leads.csv), and a summary of the Indian leads data
+    saved (number of prospects, focus on Indian MSMEs).
+  agent: b2b_prospect_discovery_specialist
+  context:
+  - generate_indian_leads_csv_report

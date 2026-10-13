@@ -1,0 +1,57 @@
+---
+process_lead_data_from_onedrive:
+  description: >
+    Download leads/leads.csv from Microsoft OneDrive and read every row. The header
+    may be Name,Company,Industry,Job_Title,Company_Size,Email or the same plus
+    Email_Source. If a whole line is wrapped in quotation marks, remove those outer
+    marks before splitting it. Copy every value exactly as written; never correct,
+    guess or fill in a value, and never add a lead that is not in the file. If a row
+    has fewer or more values than the header, do not guess which value is missing;
+    mark that row MALFORMED and keep its original text. Count the rows you read.
+  expected_output: >
+    A table with one row per line of the file, in the same order, with the columns
+    Name, Company, Industry, Job_Title, Company_Size, Email, Email_Source (blank if
+    the file has no such column) and Data_Issues (MALFORMED, missing name, missing
+    email, size not a number, or none). End with the total number of rows read.
+  agent: lead_data_analyst
+apply_radar_scoring:
+  description: |
+    Score every lead from the previous table using only the values in that table. Do not use your own knowledge of the company to change any value.
+
+    Industry points: Healthcare, Manufacturing, Education or Technology (Tech, IT, IT Services, Software and SaaS count as Technology) = 30. Any other industry, a non-profit, or a blank industry = 10.
+
+    Seniority points: CEO, Founder, Co-Founder, Managing Director, CTO, CMO, COO or Operations Head = 35. Director, VP or a title starting with Head of = 25. Manager = 15. Any other title or a blank title = 5.
+
+    Size points: Company_Size must be a plain number of employees. 50 to 500 = 35. 501 to 1000 = 25. 10 to 49 = 15. Any other number = 5. If Company_Size is text such as Small, a range, or blank, give 5 points and add the flag "size not verified".
+
+    Score = Industry points + Seniority points + Size points. Write all three parts and check that they add up to the Score. Category: HOT if Score is 71 or more, WARM if 40 to 70, WATCH if below 40.
+
+    Rows marked MALFORMED are not scored: give them Category FIX DATA and no score.
+
+    Flags, which never change the score: "no email" if Email is blank; "generic inbox" if the email starts with info, hello, contact, collaborations, sales or support; "email source missing" if Email is filled but Email_Source is blank.
+  expected_output: >
+    A table with one row per input row, in the same order, with the columns Name,
+    Company, Industry, Job_Title, Company_Size, Email, Industry_Points,
+    Seniority_Points, Size_Points, Score, Category, Flags and Reason. The number of
+    rows must equal the number of rows read. End with the counts of HOT, WARM, WATCH
+    and FIX DATA, which must add up to the total.
+  agent: radar_lead_scoring_specialist
+  context:
+  - process_lead_data_from_onedrive
+generate_reports_and_send_alerts:
+  description: |
+    1. Create a Google Sheet named "RADAR Scored Leads" followed by today's date, using google_sheets/create_spreadsheet.
+    2. Using google_sheets/update_values, write the header row Name, Company, Industry, Job_Title, Company_Size, Email, Score, Category, Flags, Reason, then one row for every lead in the scoring table, copying each value exactly. Do not add, drop or rescore any lead.
+    3. Share the sheet with {report_recipients} using google_drive/share_file.
+    4. Send ONE email with google_gmail/send_email to {report_recipients} only.
+       Subject: "RADAR: N HOT leads for review", where N is the number of HOT rows in the scoring table.
+       Body: every HOT lead with its name, company, score and flags; the counts of HOT, WARM, WATCH and FIX DATA; the sheet link copied exactly from the create_spreadsheet result; and the line "Human approval required before any outreach is sent."
+       Do not mention attachments. If there are no HOT leads, still send the email with the counts.
+    5. If any tool call fails, say which one failed in the email instead of reporting success.
+  expected_output: >
+    The sheet link exactly as returned by google_sheets/create_spreadsheet, the number
+    of lead rows written to the sheet, the HOT, WARM, WATCH and FIX DATA counts, and
+    the confirmation returned by google_gmail/send_email.
+  agent: sales_intelligence_reporter
+  context:
+  - apply_radar_scoring

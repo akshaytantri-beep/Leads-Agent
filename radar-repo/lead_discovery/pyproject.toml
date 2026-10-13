@@ -1,0 +1,26 @@
+[project]
+name = "indian_msme_lead_discovery"
+version = "0.1.0"
+description = "RADAR lead discovery: finds Indian SMEs showing buying signals"
+authors = [{ name = "Akshaya Tantri" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[file-processing,litellm,tools]>=1.15.24,<2.0.0",
+]
+
+[project.scripts]
+indian_msme_lead_discovery = "indian_msme_lead_discovery.main:run"
+run_crew = "indian_msme_lead_discovery.main:run"
+train = "indian_msme_lead_discovery.main:train"
+replay = "indian_msme_lead_discovery.main:replay"
+test = "indian_msme_lead_discovery.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
+
+[tool.uv]
+override-dependencies = ["litellm<=1.82.6"]

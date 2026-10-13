@@ -1,0 +1,26 @@
+[project]
+name = "radar_lead_scoring"
+version = "0.1.0"
+description = "RADAR: a multi-agent lead scoring pipeline built with CrewAI"
+authors = [{ name = "Akshaya Tantri" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[file-processing,litellm,tools]>=1.15.24,<2.0.0",
+]
+
+[project.scripts]
+radar_lead_scoring = "radar_lead_scoring.main:run"
+run_crew = "radar_lead_scoring.main:run"
+train = "radar_lead_scoring.main:train"
+replay = "radar_lead_scoring.main:replay"
+test = "radar_lead_scoring.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
+
+[tool.uv]
+override-dependencies = ["litellm<=1.82.6"]
